@@ -1,35 +1,59 @@
 from utils.Point import Point
+from utils.Permutations import Permutations
+
 
 # a ideia final é adicionar um algoritmo de min max que escolhe os alvos de forma a minimizar a maior distancia entre um robo e seu target
+def list_lt(    # list less than
+        list1: list[float],
+        list2: list[float]
+    ) -> bool:
+
+    list1.sort(reverse=True)
+    list2.sort(reverse=True)
+    for i in range(len(list1)):
+        if list1[i] == list2[i]:
+            continue
+        elif list1[i] < list2[i]:
+            return True
+        else: return False
+
+
 
 class DecisionMaking:
+
+    decided = False
+    finalDecision = []
+    num_targets = -1
+
     @staticmethod
     def chooseTarget(curr_id: int, targets: list[Point], teammates: dict):
-        # Implementação atual:
-        # Cada target vai escolher um robo, o mais próximo.
-
         chosen_target = -1  # sem target ainda
+        if len(targets) != DecisionMaking.num_targets:
+            DecisionMaking.decided = False
 
-        # cada robo nao pode ser escolhido por mais de um alvo, entao utilizamos esse set para registrar os robos escolhidos
-        teammates_selected: set[int] = set()
-        # iterar por cada target
-        for target_id, target in enumerate(targets):
-            targets_closest_teammate_id = -1
-            targets_closest_teammate_dist = 1e9
+        if not DecisionMaking.decided:
+            # indices de atribuição de robo para target
+            # exemplo de funcionamento [1, 3, 2, 0, 5, 4] -> o robo com id 1 vai para o tagret 0, o robo com id 3, vai para o target 1 e assim por diante...
+            all_attributions = Permutations.getAllPermutations(len(teammates.keys()), len(targets))
 
-            # cada target vai iterar por cada robo
-            for teammate_id, teammate in teammates.items():
-                if teammate_id in teammates_selected:
-                    continue    # se ja foi selecionado, ignora
+            fastest_attribution = -1
+            min_list_dist = [1e9] * len(targets)
+            for idx, attribution in enumerate(all_attributions):
+                distances = [
+                    targets[target_id].dist_to(Point(teammates[robot_id].x, teammates[robot_id].y))
+                    for target_id, robot_id in enumerate(attribution)
+                ]
+                if list_lt(distances, min_list_dist):
+                    fastest_attribution = idx
+                    min_list_dist = distances
 
-                # achar o mais proximo
-                if targets_closest_teammate_id == -1 or target.dist_to(teammate) < targets_closest_teammate_dist:
-                    targets_closest_teammate_id = teammate_id
-                    targets_closest_teammate_dist = target.dist_to(teammate)
+            DecisionMaking.decided = True
+            DecisionMaking.finalDecision = all_attributions[fastest_attribution]
+            DecisionMaking.num_targets = len(targets)
 
-            # se o robo realizando a conta for escolhido por um target, ir para esse target
-            if targets_closest_teammate_id == curr_id and curr_id not in teammates_selected:
+
+        for target_id, robot_id in enumerate(DecisionMaking.finalDecision):
+            if robot_id == curr_id:
                 chosen_target = target_id
-            teammates_selected.add(targets_closest_teammate_id)
 
         return chosen_target

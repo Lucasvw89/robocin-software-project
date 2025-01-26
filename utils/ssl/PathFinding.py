@@ -103,7 +103,7 @@ class PathFinding:
         offset = perpendicular_vector * vector_to_intersect.dot(perpendicular_vector)
 
         # ecalar o resultado para a distancia mais proxima possivel do obstaculo, mas mitigando a probabilidade de colisao
-        offset = offset.normalize() * (0.2)
+        offset = offset.normalize() * (0.25)
 
         # mandar o robo para o novo ponto
         target_velocity, target_angle_velocity = Navigation.goToPoint(

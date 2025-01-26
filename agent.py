@@ -18,7 +18,6 @@ class ExampleAgent(BaseAgent):
         if len(self.targets) == 0:
             return
 
-        # todos os robos realizam o mesmo calculo para obter o mesmo resultado e manter sincronicidade
         self.curr_target = DecisionMaking.chooseTarget(
             curr_id=self.id,
             targets=self.targets,
@@ -26,6 +25,7 @@ class ExampleAgent(BaseAgent):
         )
 
         return
+
 
 
     def post_decision(self):
